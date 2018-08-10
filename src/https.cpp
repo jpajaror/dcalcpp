@@ -23,17 +23,25 @@
  * Simple HTTPS GET
  * </DESC>
  */ 
-#include <cstdlib>
+//#include <cstdlib>
 #include <iostream>
 #include <curl/curl.h>
-//#include "rapidxml/rapidxml.hpp"
+#include "rapidxml/rapidxml.hpp"
 
 #ifndef WIN32 // or something like that...
 #define __stdcall
 #endif
 
 using namespace std;
-//using namespace rapidxml;
+using namespace rapidxml;
+
+void get_result(char*  strDoc){
+  xml_document<> doc;
+  doc.parse<0>(strDoc);
+
+  xml_node<> *node = doc.first_node("");
+
+}
  
 int main(void)
 {
@@ -45,7 +53,7 @@ int main(void)
  
   curl = curl_easy_init();
 //  const char* url = "https://www.nasdaq.com/dividend-stocks/dividend-calendar.aspx?date=2018-Aug-13";
-  const char* url = "https://www.example.com";
+  const char* url = "http://kermitproject.org/utf8.html";
   if(curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url);
  
@@ -106,6 +114,7 @@ int main(void)
     /* always cleanup */ 
     curl_easy_cleanup(curl);
   }
+  size_t startTable1=responseBody.find("id=\"Table1\"");
   cout << responseBody;
  
   curl_global_cleanup();
