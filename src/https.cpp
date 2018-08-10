@@ -25,6 +25,7 @@
  */ 
 //#include <cstdlib>
 #include <iostream>
+#include <string.h>
 #include <curl/curl.h>
 #include "rapidxml/rapidxml.hpp"
 
@@ -36,6 +37,7 @@ using namespace std;
 using namespace rapidxml;
 
 void get_result(char*  strDoc){
+//https://github.com/cgroza/wx-Youtube/blob/master/tests/xml_curl/xml_curl_test.cxx
   xml_document<> doc;
   doc.parse<0>(strDoc);
 
@@ -48,12 +50,13 @@ int main(void)
   CURL *curl;
   CURLcode res;
   std::string responseBody;
+  static bool retrieve = false;
  
   curl_global_init(CURL_GLOBAL_DEFAULT);
  
   curl = curl_easy_init();
-//  const char* url = "https://www.nasdaq.com/dividend-stocks/dividend-calendar.aspx?date=2018-Aug-13";
-  const char* url = "http://kermitproject.org/utf8.html";
+  const char* url = "https://www.nasdaq.com/dividend-stocks/dividend-calendar.aspx?date=2018-Aug-13";
+//  const char* url = "http://kermitproject.org/utf8.html";
   if(curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url);
  
@@ -97,11 +100,27 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, 
 //https://stackoverflow.com/questions/9786150/save-curl-content-result-into-a-string-in-c
     static_cast<size_t (__stdcall *)(char*, size_t, size_t, void*)>(
-        [](char* ptr, size_t size, size_t nmemb, void* resultBody){
+        [&retrieve](char* ptr, size_t size, size_t nmemb, void* resultBody){
             //*(static_cast<std::string*>(resultBody)) += std::string {ptr, size * nmemb};
-            size_t realsize = size * nmemb;
-            (static_cast<std::string*>(resultBody))->append(ptr, realsize);
-            return realsize;
+            const char* start;
+            if (!retrieve) {
+                start = strstr(ptr, "<table id=\"Table1");
+                if (NULL != start) {
+                    retrieve = true;
+                } else
+                    return nmemb;
+            } else
+                start = ptr;
+            if (retrieve) {
+                char *end = strstr((char*)start, "</table>");
+                const char *eot = end + 8;
+                if (NULL != end) {
+                    (static_cast<std::string*>(resultBody))->append(start, eot);
+                    retrieve = false;
+                } else
+                    (static_cast<std::string*>(resultBody))->append(start);
+            }
+            return nmemb;
         }));
 
     /* Perform the request, res will get the return code */ 
@@ -120,4 +139,4 @@ int main(void)
   curl_global_cleanup();
  
   return 0;
-}
+} 
