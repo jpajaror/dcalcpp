@@ -23,18 +23,29 @@
  * Simple HTTPS GET
  * </DESC>
  */ 
-#include <stdio.h>
+#include <cstdlib>
+#include <iostream>
 #include <curl/curl.h>
+//#include "rapidxml/rapidxml.hpp"
+
+#ifndef WIN32 // or something like that...
+#define __stdcall
+#endif
+
+using namespace std;
+//using namespace rapidxml;
  
 int main(void)
 {
   CURL *curl;
   CURLcode res;
+  std::string responseBody;
  
   curl_global_init(CURL_GLOBAL_DEFAULT);
  
   curl = curl_easy_init();
-  char* url = "https://www.nasdaq.com/dividend-stocks/dividend-calendar.aspx?date=2018-Aug-13";
+//  const char* url = "https://www.nasdaq.com/dividend-stocks/dividend-calendar.aspx?date=2018-Aug-13";
+  const char* url = "https://www.example.com";
   if(curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url);
  
@@ -71,7 +82,19 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_SSLv3);
 #endif
 
+    curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, (char*)"Dark Secret Ninja/1.0");
+
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBody);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, 
+//https://stackoverflow.com/questions/9786150/save-curl-content-result-into-a-string-in-c
+    static_cast<size_t (__stdcall *)(char*, size_t, size_t, void*)>(
+        [](char* ptr, size_t size, size_t nmemb, void* resultBody){
+            //*(static_cast<std::string*>(resultBody)) += std::string {ptr, size * nmemb};
+            size_t realsize = size * nmemb;
+            (static_cast<std::string*>(resultBody))->append(ptr, realsize);
+            return realsize;
+        }));
 
     /* Perform the request, res will get the return code */ 
     res = curl_easy_perform(curl);
@@ -83,6 +106,7 @@ int main(void)
     /* always cleanup */ 
     curl_easy_cleanup(curl);
   }
+  cout << responseBody;
  
   curl_global_cleanup();
  
