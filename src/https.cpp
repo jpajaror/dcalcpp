@@ -36,6 +36,8 @@
 using namespace std;
 using namespace rapidxml;
 
+bool retrieve = false;
+
 void get_result(char*  strDoc){
 //https://github.com/cgroza/wx-Youtube/blob/master/tests/xml_curl/xml_curl_test.cxx
   xml_document<> doc;
@@ -50,7 +52,6 @@ int main(void)
   CURL *curl;
   CURLcode res;
   std::string responseBody;
-  static bool retrieve = false;
  
   curl_global_init(CURL_GLOBAL_DEFAULT);
  
@@ -97,10 +98,11 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_USERAGENT, (char*)"Dark Secret Ninja/1.0");
 
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBody);
+
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, 
 //https://stackoverflow.com/questions/9786150/save-curl-content-result-into-a-string-in-c
     static_cast<size_t (__stdcall *)(char*, size_t, size_t, void*)>(
-        [&retrieve](char* ptr, size_t size, size_t nmemb, void* resultBody){
+        [](char* ptr, size_t size, size_t nmemb, void* resultBody){
             //*(static_cast<std::string*>(resultBody)) += std::string {ptr, size * nmemb};
             const char* start;
             if (!retrieve) {
@@ -133,7 +135,6 @@ int main(void)
     /* always cleanup */ 
     curl_easy_cleanup(curl);
   }
-  size_t startTable1=responseBody.find("id=\"Table1\"");
   cout << responseBody;
  
   curl_global_cleanup();
