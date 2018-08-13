@@ -30,6 +30,7 @@
 *.exe
 *.out
 *.app
+bin/*
 
 #Apple garbage files
 .DS_Store
