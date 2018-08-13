@@ -27,17 +27,49 @@
 #include <iostream>
 #include <string.h>
 #include <curl/curl.h>
+#include "rapidxml/rapidxml.hpp"
 
 #ifndef WIN32 // or something like that...
 #define __stdcall
 #endif
 
 using namespace std;
+using namespace rapidxml;
 
 bool retrieve = false;
 
 void get_result(char* strDoc){
 //https://github.com/cgroza/wx-Youtube/blob/master/tests/xml_curl/xml_curl_test.cxx
+  xml_document<> doc;
+  doc.parse<0>(strDoc);
+  xml_node<>* cur_node = doc.first_node("table")->first_node("tbody")->first_node("tr");
+//https://www.nasdaq.com/symbol/
+//1234567890123456789012345678901
+  while (cur_node != NULL){
+    xml_node<>* field_node= cur_node->first_node("td");
+    string link=field_node->first_node("a")->first_attribute("href")->value();
+    string name=field_node->first_node("a")->value();
+    field_node = field_node->next_sibling("td");
+    string value = field_node->value();
+    string tick = link.substr(30, link.find_first_of('/',30)-30);
+    cout << tick << ";" << name << ";" << link << ";" << value << ";";
+    field_node = field_node->next_sibling("td");
+    value = field_node->value();
+    cout << value << ";";
+    field_node = field_node->next_sibling("td");
+    value = field_node->value();
+    cout << value << ";";
+    field_node = field_node->next_sibling("td");
+    value = field_node->value();
+    cout << value << ";";
+    field_node = field_node->next_sibling("td");
+    value = field_node->value();
+    cout << value << ";";
+    field_node = field_node->next_sibling("td");
+    value = field_node->value();
+    cout << value << '\n';
+    cur_node = cur_node->next_sibling("tr");
+  }
 }
  
 int main(int argc, char* argv[]) {
@@ -114,8 +146,13 @@ int main(int argc, char* argv[]) {
                 if (NULL != end) {
                     (static_cast<std::string*>(resultBody))->append(start, eot);
                     retrieve = false;
-                } else
-                    (static_cast<std::string*>(resultBody))->append(start);
+                } else {
+                    size_t len=strlen(start);
+                    if (start[len]=='\n') {
+                        len--;
+                    }
+                    (static_cast<std::string*>(resultBody))->append(start, len);
+                }
             }
             return nmemb;
         }));
@@ -130,9 +167,10 @@ int main(int argc, char* argv[]) {
     /* always cleanup */ 
     curl_easy_cleanup(curl);
   }
-  cout << responseBody;
-//  char *chrDoc=(char *)responseBody.c_str();
-//  get_result(chrDoc);
+  //cout << responseBody;
+  char *chrDoc=(char *)responseBody.c_str();
+  cout << responseBody << '\n';
+  get_result(chrDoc);
  
   curl_global_cleanup();
  
