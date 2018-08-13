@@ -27,28 +27,20 @@
 #include <iostream>
 #include <string.h>
 #include <curl/curl.h>
-#include "rapidxml/rapidxml.hpp"
 
 #ifndef WIN32 // or something like that...
 #define __stdcall
 #endif
 
 using namespace std;
-using namespace rapidxml;
 
 bool retrieve = false;
 
-void get_result(char*  strDoc){
+void get_result(char* strDoc){
 //https://github.com/cgroza/wx-Youtube/blob/master/tests/xml_curl/xml_curl_test.cxx
-  xml_document<> doc;
-  doc.parse<0>(strDoc);
-
-  xml_node<> *node = doc.first_node("");
-
 }
  
-int main(void)
-{
+int main(int argc, char* argv[]) {
   CURL *curl;
   CURLcode res;
   std::string responseBody;
@@ -56,7 +48,10 @@ int main(void)
   curl_global_init(CURL_GLOBAL_DEFAULT);
  
   curl = curl_easy_init();
-  const char* url = "https://www.nasdaq.com/dividend-stocks/dividend-calendar.aspx?date=2018-Aug-13";
+    char url[80]="https://www.nasdaq.com/dividend-stocks/dividend-calendar.aspx?date=";
+    cout << url << "\n";
+    strcat(url, argv[1]);
+    cout << url << "\n";
 //  const char* url = "http://kermitproject.org/utf8.html";
   if(curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -136,6 +131,8 @@ int main(void)
     curl_easy_cleanup(curl);
   }
   cout << responseBody;
+//  char *chrDoc=(char *)responseBody.c_str();
+//  get_result(chrDoc);
  
   curl_global_cleanup();
  
