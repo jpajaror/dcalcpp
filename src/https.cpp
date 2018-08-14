@@ -37,6 +37,7 @@ using namespace std;
 using namespace rapidxml;
 
 bool retrieve = false;
+const char* SEP=";";
 
 void get_result(char* strDoc){
 //https://github.com/cgroza/wx-Youtube/blob/master/tests/xml_curl/xml_curl_test.cxx
@@ -52,22 +53,25 @@ void get_result(char* strDoc){
     field_node = field_node->next_sibling("td");
     string value = field_node->value();
     string tick = link.substr(30, link.find_first_of('/',30)-30);
-    cout << tick << ";" << name << ";" << link << ";" << value << ";";
+    string line=tick;
+    line=line.append(SEP).append(name).append(SEP).append(link);
+    line=line.append(SEP).append(value).append(SEP);
     field_node = field_node->next_sibling("td");
     value = field_node->value();
-    cout << value << ";";
+    line=line.append(value).append(SEP);
     field_node = field_node->next_sibling("td");
     value = field_node->value();
-    cout << value << ";";
+    line=line.append(value).append(SEP);
     field_node = field_node->next_sibling("td");
     value = field_node->value();
-    cout << value << ";";
+    line=line.append(value).append(SEP);
     field_node = field_node->next_sibling("td");
     value = field_node->value();
-    cout << value << ";";
+    line=line.append(value).append(SEP);
     field_node = field_node->next_sibling("td");
+    line=line.append(value).append("\n");
     value = field_node->value();
-    cout << value << '\n';
+    cout << line;
     cur_node = cur_node->next_sibling("tr");
   }
 }
@@ -81,9 +85,7 @@ int main(int argc, char* argv[]) {
  
   curl = curl_easy_init();
     char url[80]="https://www.nasdaq.com/dividend-stocks/dividend-calendar.aspx?date=";
-    cout << url << "\n";
     strcat(url, argv[1]);
-    cout << url << "\n";
 //  const char* url = "http://kermitproject.org/utf8.html";
   if(curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -169,7 +171,7 @@ int main(int argc, char* argv[]) {
   }
   //cout << responseBody;
   char *chrDoc=(char *)responseBody.c_str();
-  cout << responseBody << '\n';
+//  cout << responseBody << '\n';
   get_result(chrDoc);
  
   curl_global_cleanup();
