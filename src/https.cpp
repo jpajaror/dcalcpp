@@ -44,8 +44,6 @@ void get_result(char* strDoc){
   xml_document<> doc;
   doc.parse<0>(strDoc);
   xml_node<>* cur_node = doc.first_node("table")->first_node("tbody")->first_node("tr");
-//https://www.nasdaq.com/symbol/
-//1234567890123456789012345678901
   while (cur_node != NULL){
     xml_node<>* field_node= cur_node->first_node("td");
     string link=field_node->first_node("a")->first_attribute("href")->value();
